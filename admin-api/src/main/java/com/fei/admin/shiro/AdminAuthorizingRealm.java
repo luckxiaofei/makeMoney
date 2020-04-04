@@ -1,43 +1,62 @@
 package com.fei.admin.shiro;
 
 
+import com.fei.common.util.bcrypt.BCryptPasswordEncoder;
+import com.fei.db.dao.SysPermissionMapper;
+import com.fei.db.dao.SysRoleMapper;
+import com.fei.db.entity.po.SysPermission;
+import com.fei.db.entity.po.SysRole;
+import com.fei.db.entity.vo.SysAdminVO;
+import com.fei.db.service.SysAdminUserService;
+import com.fei.db.util.Collections3;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-import com.fei.common.util.bcrypt.BCryptPasswordEncoder;
-import com.fei.db.entity.po.Admin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class AdminAuthorizingRealm extends AuthorizingRealm {
 
-//    @Autowired
-//    private LitemallAdminService adminService;
-//    @Autowired
-//    private LitemallRoleService roleService;
-//    @Autowired
-//    private LitemallPermissionService permissionService;
+    @Autowired
+    private SysAdminUserService sysAdminUserService;
+    @Autowired
+    private SysRoleMapper roleMapper;
+    @Autowired
+    private SysPermissionMapper permissionMapper;
 
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
         if (principals == null) {
             throw new AuthorizationException("PrincipalCollection method argument cannot be null.");
         }
+        Set<String> roles = Sets.newHashSet();
+        Set<String> permissions = Sets.newHashSet();
 
-        Admin admin = (Admin) getAvailablePrincipal(principals);
-        Integer[] roleIds = admin.getRoleIds();
-        Set<String> roles = null;
-//        roles = roleService.queryByIds(roleIds);
-        Set<String> permissions = null;
-//        permissions = permissionService.queryByRoleIds(roleIds);
+        SysAdminVO admin = (SysAdminVO) getAvailablePrincipal(principals);
+        List<SysRole> roleIds = admin.getSysRoleList();
+        if (Collections3.isNotEmpty(roleIds)) {
+            Example exampleSysRole = new Example(SysRole.class);
+            exampleSysRole.createCriteria().andIn("id", roleIds);
+            List<SysRole> sysRoles = roleMapper.selectByExample(exampleSysRole);
+            roles = sysRoles.stream().map(SysRole::getName).collect(Collectors.toSet());
+
+            Example exampleSysPermission = new Example(SysPermission.class);
+            exampleSysPermission.createCriteria().andIn("roleId", roleIds);
+            List<SysPermission> sysPermissionList = permissionMapper.selectByExample(exampleSysPermission);
+            permissions = sysPermissionList.stream().map(SysPermission::getPermission).distinct().collect(Collectors.toSet());
+        }
+
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
         info.setRoles(roles);
         info.setStringPermissions(permissions);
@@ -58,20 +77,18 @@ public class AdminAuthorizingRealm extends AuthorizingRealm {
             throw new AccountException("密码不能为空");
         }
 
-        List<Admin> adminList = Lists.newArrayList();
-//        adminList = adminService.findAdmin(username);
-        Assert.state(adminList.size() < 2, "同一个用户名存在两个账户");
-        if (adminList.size() == 0) {
+        List<SysAdminVO> sysAdminVOList = sysAdminUserService.getSysAdminVO(username);
+        Assert.state(sysAdminVOList.size() > 1, "同一个用户名存在多个账户");
+        if (sysAdminVOList.size() == 0) {
             throw new UnknownAccountException("找不到用户（" + username + "）的帐号信息");
         }
-        Admin admin = adminList.get(0);
+        SysAdminVO sysAdminVO = sysAdminVOList.get(0);
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        if (!encoder.matches(password, admin.getPassword())) {
+        if (!encoder.matches(password, sysAdminVO.getPassword())) {
             throw new UnknownAccountException("找不到用户（" + username + "）的帐号信息");
         }
-
-        return new SimpleAuthenticationInfo(admin, password, getName());
+        return new SimpleAuthenticationInfo(sysAdminVO, password, getName());
     }
 
 }

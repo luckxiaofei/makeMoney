@@ -3,7 +3,7 @@ package com.fei.common.qcode;
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import com.fei.common.storage.StorageService;
 import com.fei.common.system.SystemConfig;
-import com.fei.db.entity.po.LitemallStorage;
+import com.fei.db.entity.po.SysStorage;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,7 +35,7 @@ public class QCodeService {
             byte[] imageData = new byte[inputStream.available()];
             ByteArrayInputStream inputStream2 = new ByteArrayInputStream(imageData);
             //存储分享图
-            LitemallStorage storageInfo = storageService.store(inputStream2, imageData.length, "image/jpeg", "邀请好友" + shareUserId);
+            SysStorage storageInfo = storageService.store(inputStream2, imageData.length, "image/jpeg", "邀请好友" + shareUserId);
             return storageInfo.getUrl();
         } catch (WxErrorException e) {
             logger.error(e.getMessage(), e);
@@ -58,7 +58,7 @@ public class QCodeService {
 //            byte[] imageData = drawPicture(inputStream, goodPicUrl, goodName);
 //            ByteArrayInputStream inputStream2 = new ByteArrayInputStream(imageData);
 //            //存储分享图
-//            LitemallStorage storageInfo = storageService.store(inputStream2, imageData.length, "image/jpeg",
+//            SysStorage storageInfo = storageService.store(inputStream2, imageData.length, "image/jpeg",
 //                    getKeyName(groupon.getId().toString()));
 //
 //            return storageInfo.getUrl();
@@ -93,10 +93,10 @@ public class QCodeService {
             byte[] imageData = drawPicture(inputStream, goodPicUrl, goodName);
             ByteArrayInputStream inputStream2 = new ByteArrayInputStream(imageData);
             //存储分享图
-            LitemallStorage litemallStorage = storageService.store(inputStream2, imageData.length, "image/jpeg",
+            SysStorage SysStorage = storageService.store(inputStream2, imageData.length, "image/jpeg",
                     getKeyName(goodId));
 
-            return litemallStorage.getUrl();
+            return SysStorage.getUrl();
         } catch (WxErrorException e) {
             logger.error(e.getMessage(), e);
         } catch (FileNotFoundException e) {

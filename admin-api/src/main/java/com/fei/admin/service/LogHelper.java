@@ -1,9 +1,11 @@
 package com.fei.admin.service;
 
+import com.fei.common.util.IpUtil;
+import com.fei.db.entity.po.SysLog;
+import com.fei.db.entity.vo.SysAdminVO;
+import com.fei.db.service.SysLogService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
-import com.fei.db.entity.po.Admin;
-import com.fei.common.util.IpUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -22,90 +24,90 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Component
 public class LogHelper {
-//    public static final  Integer LOG_TYPE_GENERAL = 0;
-//    public static final  Integer LOG_TYPE_AUTH = 1;
-//    public static final  Integer LOG_TYPE_ORDER = 2;
-//    public static final  Integer LOG_TYPE_OTHER = 3;
-//
-//    @Autowired
-//    private LitemallLogService logService;
-//
-//    public void logGeneralSucceed(String action) {
-//        logAdmin(LOG_TYPE_GENERAL, action, true, "", "");
-//    }
-//
-//    public void logGeneralSucceed(String action, String result) {
-//        logAdmin(LOG_TYPE_GENERAL, action, true, result, "");
-//    }
-//
-//    public void logGeneralFail(String action, String error) {
-//        logAdmin(LOG_TYPE_GENERAL, action, false, error, "");
-//    }
-//
-//    public void logAuthSucceed(String action) {
-//        logAdmin(LOG_TYPE_AUTH, action, true, "", "");
-//    }
-//
-//    public void logAuthSucceed(String action, String result) {
-//        logAdmin(LOG_TYPE_AUTH, action, true, result, "");
-//    }
-//
-//    public void logAuthFail(String action, String error) {
-//        logAdmin(LOG_TYPE_AUTH, action, false, error, "");
-//    }
-//
-//    public void logOrderSucceed(String action) {
-//        logAdmin(LOG_TYPE_ORDER, action, true, "", "");
-//    }
-//
-//    public void logOrderSucceed(String action, String result) {
-//        logAdmin(LOG_TYPE_ORDER, action, true, result, "");
-//    }
-//
-//    public void logOrderFail(String action, String error) {
-//        logAdmin(LOG_TYPE_ORDER, action, false, error, "");
-//    }
-//
-//    public void logOtherSucceed(String action) {
-//        logAdmin(LOG_TYPE_OTHER, action, true, "", "");
-//    }
-//
-//    public void logOtherSucceed(String action, String result) {
-//        logAdmin(LOG_TYPE_OTHER, action, true, result, "");
-//    }
-//
-//
-//    public void logOtherFail(String action, String error) {
-//        logAdmin(LOG_TYPE_OTHER, action, false, error, "");
-//    }
+    public static final Integer LOG_TYPE_GENERAL = 0;
+    public static final Integer LOG_TYPE_AUTH = 1;
+    public static final Integer LOG_TYPE_ORDER = 2;
+    public static final Integer LOG_TYPE_OTHER = 3;
 
-//    public void logAdmin(Integer type, String action, Boolean succeed, String result, String comment) {
-//        LitemallLog log = new LitemallLog();
-//
-//        Subject currentUser = SecurityUtils.getSubject();
-//        if (currentUser != null) {
-//            Admin admin = (Admin) currentUser.getPrincipal();
-//            if (admin != null) {
-//                log.setAdmin(admin.getUsername());
-//            } else {
-//                log.setAdmin("匿名用户");
-//            }
-//        } else {
-//            log.setAdmin("匿名用户");
-//        }
-//
-//        HttpServletRequest request =
-//                ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-//        if (request != null) {
-//            log.setIp(IpUtil.getIpAddr(request));
-//        }
-//
-//        log.setType(type);
-//        log.setAction(action);
-//        log.setStatus(succeed);
-//        log.setResult(result);
-//        log.setComment(comment);
-//        logService.add(log);
-//    }
+    @Autowired
+    private SysLogService logService;
+
+    public void logGeneralSucceed(String action) {
+        logAdmin(LOG_TYPE_GENERAL, action, true, "", "");
+    }
+
+    public void logGeneralSucceed(String action, String result) {
+        logAdmin(LOG_TYPE_GENERAL, action, true, result, "");
+    }
+
+    public void logGeneralFail(String action, String error) {
+        logAdmin(LOG_TYPE_GENERAL, action, false, error, "");
+    }
+
+    public void logAuthSucceed(String action) {
+        logAdmin(LOG_TYPE_AUTH, action, true, "", "");
+    }
+
+    public void logAuthSucceed(String action, String result) {
+        logAdmin(LOG_TYPE_AUTH, action, true, result, "");
+    }
+
+    public void logAuthFail(String action, String error) {
+        logAdmin(LOG_TYPE_AUTH, action, false, error, "");
+    }
+
+    public void logOrderSucceed(String action) {
+        logAdmin(LOG_TYPE_ORDER, action, true, "", "");
+    }
+
+    public void logOrderSucceed(String action, String result) {
+        logAdmin(LOG_TYPE_ORDER, action, true, result, "");
+    }
+
+    public void logOrderFail(String action, String error) {
+        logAdmin(LOG_TYPE_ORDER, action, false, error, "");
+    }
+
+    public void logOtherSucceed(String action) {
+        logAdmin(LOG_TYPE_OTHER, action, true, "", "");
+    }
+
+    public void logOtherSucceed(String action, String result) {
+        logAdmin(LOG_TYPE_OTHER, action, true, result, "");
+    }
+
+
+    public void logOtherFail(String action, String error) {
+        logAdmin(LOG_TYPE_OTHER, action, false, error, "");
+    }
+
+    public void logAdmin(Integer type, String action, Boolean succeed, String result, String comment) {
+        SysLog log = new SysLog();
+
+        Subject currentUser = SecurityUtils.getSubject();
+        if (currentUser != null) {
+            SysAdminVO admin = (SysAdminVO) currentUser.getPrincipal();
+            if (admin != null) {
+                log.setAdmin(admin.getUserName());
+            } else {
+                log.setAdmin("匿名用户");
+            }
+        } else {
+            log.setAdmin("匿名用户");
+        }
+
+        HttpServletRequest request =
+                ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        if (request != null) {
+            log.setIp(IpUtil.getIpAddr(request));
+        }
+
+        log.setType(type);
+        log.setAction(action);
+        log.setStatus(succeed);
+        log.setResult(result);
+        log.setComment(comment);
+        logService.add(log);
+    }
 
 }
